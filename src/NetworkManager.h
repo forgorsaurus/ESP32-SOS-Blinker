@@ -23,6 +23,7 @@ private:
     
     bool _apMode;
     unsigned long _lastWifiCheck;
+    wl_status_t _lastNetworkStatus;
     
     void startSTA();
     void startAP();

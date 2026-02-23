@@ -33,31 +33,46 @@ const PatternStep SOS_PATTERN[] = {
 };
 
 const int PATTERN_LEN = sizeof(SOS_PATTERN) / sizeof(PatternStep);
+const int MAX_REPETITIONS = 3;
 
-SOSBlinker::SOSBlinker(uint8_t pin) : _pin(pin), _state(0) {}
+SOSBlinker::SOSBlinker(uint8_t pin) : _pin(pin), _state(0), _repetitions(0) {}
 
 void SOSBlinker::begin() {
     pinMode(_pin, OUTPUT);
     digitalWrite(_pin, LOW);
     _lastUpdate = millis();
     _state = 0;
+    _repetitions = 0;
 }
 
 void SOSBlinker::update() {
+    if (_repetitions >= MAX_REPETITIONS) {
+        digitalWrite(_pin, LOW);
+        return;
+    }
+
     unsigned long currentMillis = millis();
     unsigned long elapsed = currentMillis - _lastUpdate;
     
     unsigned long duration = SOS_PATTERN[_state].units * MORSE_UNIT;
     
     if (elapsed >= duration) {
-        _state = (_state + 1) % PATTERN_LEN;
+        _state++;
+        if (_state >= PATTERN_LEN) {
+            _state = 0;
+            _repetitions++;
+        }
         _lastUpdate = currentMillis;
     }
     
-    bool on = SOS_PATTERN[_state].on;
-    digitalWrite(_pin, on ? HIGH : LOW);
+    if (_repetitions < MAX_REPETITIONS) {
+        bool on = SOS_PATTERN[_state].on;
+        digitalWrite(_pin, on ? HIGH : LOW);
+    } else {
+        digitalWrite(_pin, LOW);
+    }
 }
 
 bool SOSBlinker::isRunning() const {
-    return true;
+    return _repetitions < MAX_REPETITIONS;
 }

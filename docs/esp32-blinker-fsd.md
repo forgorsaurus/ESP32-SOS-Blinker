@@ -5,9 +5,10 @@
 
 | Field |   Value   |
 | --------- | ---------- |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status  | Draft |
 | Created | 2026-02-09 |
+| Updated | 2026-02-23 |
 
 ## Overview
 
@@ -18,17 +19,17 @@ This document specifies the functional requirements for an SOS Blinker device pr
 ### 1.2 System Context
 
 ```
-            ┌─────────────────┐
-            │    WiFi Router  │
-            │    (Internet)   │
-            └─────────────────┘
+            ┌─────────────────┐                   ┌────────────────────────────────────┐
+            │   WiFi Router   │ ◄───────────────► │        User's Smartphone/PC        │
+            │                 │  WiFi (STA Mode)  │  (Update WiFi Config & OTA Update) │
+            └─────────────────┘                   └────────────────────────────────────┘
                      ▲
                      │  WiFi (Station Mode)
                      ▼
-            ┌─────────────────┐                   ┌──────────────────────────┐
-            │    ESP32 SOS    │ ◄─────────────────│   User's Smartphone/PC   │
-            │   SOS Blinker   │   WiFi (AP Mode)  │                          │
-            └────────┬────────┘                   └──────────────────────────┘
+            ┌─────────────────┐                   ┌────────────────────────────────────┐
+            │    ESP32 SOS    │ ◄─────────────────│        User's Smartphone/PC        │
+            │   SOS Blinker   │   WiFi (AP Mode)  │    (Initial Setup & OTA Update)    │
+            └────────┬────────┘                   └────────────────────────────────────┘
                      │
                      │  Light (Visual Morse Code)
                      ▼
@@ -39,7 +40,7 @@ This document specifies the functional requirements for an SOS Blinker device pr
 
 Interface:
 - Light: Luatos Core ESP32-C3's onboard LED blinking morse code pattern
-- WiFi STA: Connection to home/site network
+- WiFi STA: Connection to home/site network and Local OTA Updates
 - WiFi AP: Captive portal for initial configuration (when unconfigured)
 ```
 
@@ -145,7 +146,7 @@ Interface:
 #### 3.2.2 WiFi Access Point Mode (Configuration)
 
 - **AP-001**: System SHALL start AP mode when no valid WiFi config exists
-- **AP-002**: System SHALL start AP mode when BTN_CONFIG held for 5 seconds
+- **AP-002**: From STA Mode, System SHALL start AP mode when BTN_CONFIG held for 5 seconds
 - **AP-003**: AP SHALL use SSID format: `SOSBLINK-ESP32-{MAC_LAST_4}`
 - **AP-004**: AP SHALL use open authentication (no password) for easy initial setup
 - **AP-005**: AP SHALL assign IP 192.168.1.1 to clients
@@ -197,8 +198,7 @@ Interface:
 
 - **CFG-001**: Configuration SHALL be stored in ESP32 NVS
 - **CFG-002**: Configuration SHALL persist across reboots
-- **CFG-003**: Configuration SHALL be modifiable via serial console
-- **CFG-004**: Configuration SHALL be modifiable via captive portal
+- **CFG-003**: Configuration SHALL be modifiable via captive portal
 
 #### 3.4.2 Configuration Parameters
 
@@ -207,7 +207,7 @@ Interface:
 
 | Parameter     | Type   | Default      | Description                   |
 | --------------- | -------- | -------------- | ------------------------------- |
-| `device_name` | string | "blinker-esp32" | Device identifier             |
+| `device_name` | string | "blinker-esp32" | Device identifier at STA Mode            |
 
 **WiFi Settings :**
 
@@ -231,20 +231,11 @@ Interface:
 | `ap_pass`    | string | ""                | AP password (empty = open network) |
 | `ap_timeout` | uint16 | 300               | AP auto-disable (seconds, 0=never) |
 
-**OTA Settings:**
-
-
-| Parameter            | Type   | Default | Description               |
-| ---------------------- | -------- | --------- | --------------------------- |
-| `ota_enabled`        | bool   | true    | Enable OTA updates        |
-| `ota_url`            | string | ""      | URL for auto-update check |
-| `ota_check_interval` | uint32 | 86400   | Auto-check interval (s)   |
-
 ### 3.5 OTA (Over-The-Air) Updates
 
 #### 3.5.1 Update Methods
 
-- **OTA-001**: System SHALL support firmware upload via captive portal web UI
+- **OTA-001**: System SHALL support firmware upload via accessing the Luatos Core ESP32's IP address and uploading the firmware file via web UI
 
 #### 3.5.2 Update Requirements
 
@@ -280,16 +271,16 @@ Interface:
 
 ### 3.6 Status Indication
 
-Status LED indication is implemented using Onboard LED D5.
+Status LED indication is implemented using Onboard LED D5 and serial log.
 
-| Status | LED Pattern |
-| --- | --- |
-| Booting | OFF |
-| WiFi STA mode | OFF |
-| WiFi AP mode | Blinking every 2 seconds |
-| OTA update | Blinking every 250 ms |
-| OTA update failed | Blinking every 100ms for five times |
-| OTA update success | Blinking every 100ms for three times |
+| Status | LED Pattern | Serial Log |
+| --- | --- | --- |
+| Booting | OFF | Booting... |
+| WiFi STA mode | OFF | WiFi STA mode |
+| WiFi AP mode | Blinking every 2 seconds | WiFi AP mode |
+| OTA update | Blinking every 250 ms | OTA update |
+| OTA update failed | Blinking every 100ms for five times | OTA update failed |
+| OTA update success | Blinking every 100ms for three times | OTA update success |
 
 ## 4. Non-Functional Requirements
 
@@ -301,7 +292,7 @@ Status LED indication is implemented using Onboard LED D5.
 
 ### 4.2 Reliability
 
-- **REL-001**: System SHALL recover from network outages automatically
+- **REL-001**: System SOS blinking capability SHALL keep functioning even when unconfigured or loss connection to WiFi Network
 
 ## 5. Implementation Phases
 
@@ -321,7 +312,7 @@ Status LED indication is implemented using Onboard LED D5.
 - Rollback support
 - Progress indication
 
-## 5. TBA Project Structure
+## 5. Project Structure
 
 ```
 ```
@@ -353,3 +344,4 @@ monitor_speed = 115200
 | Version | Date       | Author | Changes                                                                 |
 | --------- | ------------ | -------- | ------------------------------------------------------------------------- |
 | 1.0     | 2026-02-09 | -      | Initial specification                                                   |
+| 1.1     | 2026-02-23 | -      | Updated specification                                                   |

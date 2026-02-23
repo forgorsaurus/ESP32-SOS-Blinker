@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <esp_ota_ops.h>
 #include "definitions.h"
 #include "SOSBlinker.h"
 #include "ConfigManager.h"
@@ -12,7 +13,10 @@ NetworkManager netMgr(configMgr);
 void setup() {
     Serial.begin(115200);
     delay(100); // Give serial some time
-    Serial.println("\n--- ESP32 SOS Blinker ---");
+    Serial.println("Booting...");
+
+    // OTA Rollback protection: Mark this image as valid
+    esp_ota_mark_app_valid_cancel_rollback();
 
     // Initialize Configuration
     configMgr.begin();

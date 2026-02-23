@@ -12,4 +12,5 @@ private:
     uint8_t _pin;
     unsigned long _lastUpdate;
     int _state; // Current step in the sequence
+    int _repetitions; // Number of full patterns completed
 };
