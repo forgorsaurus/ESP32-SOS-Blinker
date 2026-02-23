@@ -315,6 +315,27 @@ Status LED indication is implemented using Onboard LED D5 and serial log.
 ## 5. Project Structure
 
 ```
+2026_ESP32Blik/
+├── docs/
+│   ├── esp32-blinker-fsd.md
+│   └── esp32_technical_reference_manual_en.pdf
+├── include/
+│   ├── README
+│   ├── SystemConfig.h
+│   └── definitions.h
+├── lib/
+│   └── README
+├── src/
+│   ├── ConfigManager.cpp
+│   ├── ConfigManager.h
+│   ├── NetworkManager.cpp
+│   ├── NetworkManager.h
+│   ├── SOSBlinker.cpp
+│   ├── SOSBlinker.h
+│   ├── html_pages.h
+│   └── main.cpp
+├── .gitignore
+└── platformio.ini
 ```
 
 ## 6. Dependencies
